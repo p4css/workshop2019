@@ -1,0 +1,334 @@
+---
+title: "Twitter"
+author: "Chiayu"
+date: "August 2019"
+output:
+  html_document:
+    theme: spacelab
+    toc: yes
+    toc_float:
+      collapsed: no
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+<style>
+
+body {
+    color: #333333;
+    font-size: 14px;
+}
+
+</style>
+
+
+
+
+## 01 prepare
+### 1.1 packages
+
+* `install.packages()` ,`library()`
+
+```{r echo=TRUE, warning=FALSE}
+options(knitr.table.format = "html")
+options(stringsAsFactors = FALSE)
+library(pacman)
+p_load(tidyverse,tidytext,lubridate,dplyr,ggplot2,stringr,RColorBrewer,knitr,bbplot,prettydoc,kableExtra,jiebaRD,jiebaR)
+```
+
+### 1.2 plot in chinese
+
+* `bbc_style_cn()` 
+```{r include=FALSE}
+bbc_style_cn <- function() {
+  font <- "Gen Jyuu GothicX"
+  ggplot2::theme(
+    #Text format:
+    #This sets the font, size, type and colour of text for the chart's title
+    plot.title = ggplot2::element_text(family=font,
+                                       size=28,
+                                       face="bold",
+                                       color="#222222"),
+    #This sets the font, size, type and colour of text for the chart's subtitle, as well as setting a margin between the title and the subtitle
+    plot.subtitle = ggplot2::element_text(family=font,
+                                          size=22,
+                                          margin=ggplot2::margin(9,0,9,0)),
+    plot.caption = ggplot2::element_blank(),
+    #This leaves the caption text element empty, because it is set elsewhere in the finalise plot function
+    #Legend format
+    #This sets the position and alignment of the legend, removes a title and backround for it and sets the requirements for any text within the legend. The legend may often need some more manual tweaking when it comes to its exact position based on the plot coordinates.
+    legend.position = "top",
+    legend.text.align = 0,
+    legend.background = ggplot2::element_blank(),
+    legend.title = ggplot2::element_blank(),
+    legend.key = ggplot2::element_blank(),
+    legend.text = ggplot2::element_text(family=font,
+                                        size=18,
+                                        color="#222222"),
+    #Axis format
+    #This sets the text font, size and colour for the axis test, as well as setting the margins and removes lines and ticks. In some cases, axis lines and axis ticks are things we would want to have in the chart - the cookbook shows examples of how to do so.
+    axis.title = ggplot2::element_blank(),
+    axis.text = ggplot2::element_text(family=font,
+                                      size=18,
+                                      color="#222222"),
+    axis.text.x = ggplot2::element_text(margin=ggplot2::margin(5, b = 10)),
+    axis.ticks = ggplot2::element_blank(),
+    axis.line = ggplot2::element_blank(),
+    #Grid lines
+    #This removes all minor gridlines and adds major y gridlines. In many cases you will want to change this to remove y gridlines and add x gridlines. The cookbook shows you examples for doing so
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(color="#cbcbcb"),
+    panel.grid.major.x = ggplot2::element_blank(),
+    
+    #Blank background
+    #This sets the panel background as blank, removing the standard grey ggplot background colour from the plot
+    panel.background = ggplot2::element_blank(),
+    #Strip background (#This sets the panel background for facet-wrapped plots to white, removing the standard grey ggplot background colour and sets the title size of the facet-wrap title to font size 22)
+    strip.background = ggplot2::element_rect(fill="white"),
+    strip.text = ggplot2::element_text(size  = 22,  hjust = 0)
+  )
+}
+
+```
+
+
+
+### 1.3 data
+
+* source : https://blog.twitter.com/en_us/topics/company/2019/information_operations_directed_at_Hong_Kong.html。
+    * 推特官方已刪除資料集，原始檔[連結](https://drive.google.com/drive/folders/1YcF1GjzbtlcAydJWx5HU68X0ueWsK8gL?usp=sharing)
+    * 資料集分成set1、set2，每個set裡面分別有帳號集以及推文集(tweets)
+    * assign成四個dataframe(set1,set2,set1_content,set2_content)
+    * 若電腦不夠存，`load(file = "twitterdata.rda")`
+
+
+```{r echo=TRUE}
+##dataset of delected accounts
+#set1 <- read.csv("data/china_082019_1_users_csv_hashed.csv")
+#set2 <- read.csv("data/china_082019_2_users_csv_hashed.csv")
+##tweets content from delected accounts
+#set1_content <- read.csv("data/china_082019_1_tweets_csv_hashed.csv")
+#set2_content <- read.csv("data/china_082019_2_tweets_csv_hashed.csv")
+load(file = "twitterdata.rda")
+```
+
+
+## 02 An overview of whole dataset
+
+### 2.1 stucture 
+
+```{r echo=TRUE, results = "hide"}
+#observation
+str(set1)
+colnames(set1_content)
+head(set2_content)
+```
+
+```{r echo=TRUE}
+
+#ask a question:cration_date for example, compare with follower_count
+set1$account_creation_date %>% summary()
+class(set1$account_creation_date)
+set1$follower_count %>% summary()
+
+```
+
+### 2.2 preprocessing 
+
+#### `Time`
+
+package `lubridate`
+
+| order of elements in date-time | parse function | 
+|-------|------|
+| year month day | ymd() |
+| year day month |ydm() | 
+| month day year |mdy() |
+| day month year | dmy() | 
+| hour minute | hm() | 
+| hour minute second | hms() | 
+| year month day hour minute second | ymd_hms() | 
+
+
+```{r echo=TRUE}
+head(set1_content$account_creation_date)
+#base::chr to POSIXct
+set1$account_creation_date <- as.POSIXct(strptime(set1$account_creation_date,"%Y-%m-%d"))
+set2$account_creation_date <- as.POSIXct(strptime(set2$account_creation_date,"%Y-%m-%d"))
+#lubridate::
+set1 %>%
+  mutate(creation_date = ymd(account_creation_date))%>%
+  select(creation_date)%>%summary()
+set1 <- set1%>%
+  mutate(account_creation_date = ymd(account_creation_date))
+#check if successfully convert to POSIXct
+class(set1$account_creation_date)
+```
+
+| account_creation_date | creation_date| 
+|-------|------|
+| Min.   :2008-05-16<br>1st Qu.:2016-06-27  <br>Median :2017-08-30<br> Mean   :2016-08-22<br>3rd Qu.:2017-10-17 <br>Max.   :2019-05-07 | Length<br>Class Mode <br>744 character<br>character  |
+
+### 2.3 time series of account_creation_date
+
+```{r}
+options(scipen = 999)
+#plot version1
+set1 %>%
+  ggplot() + 
+  aes(account_creation_date) + 
+  geom_density(color = brewer.pal(7, "Set3")[4])+
+  labs(x = "account creation date" , y = "N",title = "Set1帳號成立時間")+
+  theme(text = element_text(family = "Gen Jyuu GothicX")) +bbc_style_cn()
+#plot version2
+set1 %>%
+    ggplot(aes(account_creation_date)) +
+    geom_histogram(bins=80,fill="lightblue") +
+    labs(title = "The Date Accounts Created",subtitle = "dataset:set1")+
+    bbc_style()+
+    geom_vline(xintercept = as.Date(c("2019-02-01")), color="red", alpha=0.5)
+#set2 account
+set2 %>%
+  ggplot() + 
+  aes(account_creation_date) + 
+  geom_density(color = brewer.pal(7, "Set3")[4])+
+  labs(x = "時間" , y = "數量",title = "Set2帳號成立時間")+
+  theme(text = element_text(family = "Gen Jyuu GothicX"))+bbc_style_cn()
+#count the peak
+set1 %>%
+  count(account_creation_date) %>%
+  arrange(-n)%>%
+  mutate(portion = n/sum(n))
+#filter the arrange
+set1 %>%
+  filter(account_creation_date == "2017-08-30")%>%
+  arrange(-follower_count)%>%
+  select(userid,follower_count,following_count)
+```
+
+### 2.4 account language
+```{r}
+set1 %>%
+  count(account_language) %>%
+  arrange(-n)%>%
+  mutate(portion = n/sum(n))
+#plot
+set1 %>%
+  count(account_language) %>%
+  mutate(portion = n/sum(n))%>%
+  ggplot(aes(x = reorder(account_language, n), y = n, fill = ifelse(account_language == "zh-cn", "h","l")))+
+  geom_bar(stat = "identity")+
+  labs(title = "The Languages",subtitle = "dataset: set1")+ scale_fill_manual( values = c( "h"="orange", "l"="lightblue" ), guide = FALSE)+
+  geom_hline(yintercept = 0, size = 1, colour="grey") +
+  coord_flip() +
+  bbc_style()
+
+```
+
+
+### 2.5 follow difference
+#### 2.5.1 plot
+* using following as x, follower as y
+
+```{r}
+#add dataset lable
+set1_follow <- set1 %>%
+  select(userid,follower_count,following_count)%>%
+  mutate(dataset = factor(rep("set1",length(nrow(set1)))))
+set2_follow <- set2 %>%
+  select(userid,follower_count,following_count)%>%
+  mutate(dataset = factor(rep("set2",length(nrow(set2)))))
+#bind two dataset
+all_follow <- set2_follow %>%
+  bind_rows(set1_follow)
+all_follow <- all_follow  %>%
+  mutate(dataset = factor(rep("delected account",length(nrow(all_follow)))))
+#plot set1&set2 
+options(scipen = 999)
+ggplot(all_follow,aes(x = following_count,y = follower_count))+
+  geom_point(position = "jitter",size=2.5, colour = "#E69F00",alpha = 0.8)+ 
+  labs(title = "The distribution of follow",subtitle = "dataset: set1&set2")+
+  xlim(0,15000)+ylim(0,20000)+ scale_color_manual(values="#E69F00")+bbc_style()
+
+```
+#### 2.5.2 compare to normal
+
+normal account of twitter:
+https://twitter.com/conspirator0/status/1149851150658748416
+```{r error=FALSE, message=FALSE,results = "hide"}
+
+#plot
+load("twitter_random.rds")
+random_user.df <- random_user.df %>%
+  mutate(dataset = factor(rep("random account",length(nrow(random_user.df)))))%>%
+  rename(userid = random_name.i...)
+random_user.df%>%  
+  bind_rows(all_follow)%>%
+  ggplot(aes(x = following_count,y = follower_count,color=dataset))+
+  geom_point(position = "jitter",size=2,alpha = 0.7)+ 
+  scale_colour_manual(values=c("blue", "cyan4")) + 
+  labs(title = "The distribution of follow",subtitle = "dataset: set1&set2")+
+  xlim(0,15000)+ylim(0,20000)+ scale_color_manual(values=c("#E69F00", "#56B4E9"))+bbc_style()
+```
+
+
+## 03 An overview of 反送中account
+
+### 3.1 filter account
+
+```{r}
+#join set1_content & set2_content
+all_tweet <- bind_rows(set1_content%>%mutate(dataset = factor(rep("set1",length(nrow(set1_content))))),set2_content%>%mutate(dataset = factor(rep("set2",length(nrow(set2_content))))))%>%
+  select(-poll_choices)
+#filter relevant
+hk_relevant_tweet <- all_tweet%>%
+  mutate(tweet_time = as.POSIXct(strptime(tweet_time, "%Y-%m-%d %M:%S")))%>%
+  filter(tweet_time > as.Date("2019-01-01"))%>%
+  filter(str_detect(tweet_text, "香港警察|港警|逃犯條例|反修例|遊行|修例|反送中|anti-extradition"))
+#how many accounts relevant to anti-extradition
+hk_relevant_tweet%>%
+  group_by(dataset)%>%
+  count()
+#filter set2
+hk_relevant_tweet%>%
+  filter(dataset == "set2")
+```
+
+```{r}
+#practice filter anti-extradition
+set2_content %>%
+  filter(tweet_time > as.Date("2019-01-01")) %>%
+  filter(str_detect(tweet_text, "反送中|anti-extradition"))
+```
+
+### 3.2 frequency word
+example:tweets contains "反送中|anti-extradition"
+```{r}
+segment_not <- c("反送中", "送中條例", "香港人", "支持警察", "革命派", "勇武派", "人權", "泛民", "严惩", "暴乱", "力撑", "港警", "撐警集會", "法治社会", "逃犯条例", "逃犯條例", "警队加油", "警队", "香港加油","反對派","反对派","林鄭","林鄭月娥","做對","做对","夏悫道","龙道","撐政府","香港警察")
+cutter <- worker()
+new_user_word(cutter, segment_not)
+stopWords <- read.csv("data/stopwords_hk.csv")
+names(stopWords) <- "word"
+# 斷詞
+tokens <-  hk_relevant_tweet%>%
+  select(tweetid,tweet_time,tweet_text)%>%
+  mutate(word = purrr::map(tweet_text, function(x)segment(x, cutter)))%>%
+  unnest(word)%>%
+  filter(!(word %in% stopWords$word)) %>%
+  filter(!str_detect(word, "[a-zA-Z0-9]+"))
+# count
+tokens %>%
+  select(word)%>%
+  count(word, sort = TRUE) %>%
+  head(20)%>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col(fill = "royalblue") +
+  labs(title = "反送中相關推文詞頻",subtitle = "dataset:set1&set2") +
+  theme(axis.text.y = ggplot2::element_text(hjust = 0.9,size = 10)) +
+  coord_flip() + 
+  bbc_style_cn()
+
+```
+
+
