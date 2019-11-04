@@ -19,7 +19,7 @@
 
 # 行前通知
 1. 請先從右上角下載本github repo，並解壓縮至個人電腦。
-2. 下載以下資料集（[Deleted accounts and tweets](https://www.dropbox.com/s/nix3qai2giu3lss/data.zip?dl=0), 1.57GB, Very large），並將資料集內的檔案拖至前步驟資料夾中的data資料夾內。
+2. 下載以下資料集（[Deleted accounts and tweets](https://www.dropbox.com/s/nix3qai2giu3lss/data.zip?dl=0), 1.57GB, Very large），並將資料集內的.csv檔案拖至前步驟資料夾中的data資料夾內。
 3. 依照影片內容設定環境
 4. 依照影片內容了解Ｒ的基本使用
 
