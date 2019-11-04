@@ -1,7 +1,16 @@
 # Workshop2019
 - 講者: 謝吉隆、許家瑜、吳冠賢
 - 助教: 曾子軒、邱怡瑄、連俊翔
+- 工作人員：陳子萱
 
+# 課程時間
+- 09:30~10:20 謝吉隆 Opening and R tutorials
+- 10:40~11:30 許家瑜 dplyr for demographic analysis
+- 11:40~12:30 許家瑜 Retrieving tweets relevant to HK antiELAB
+~ Lunch break~
+- 13:30~14:20 謝吉隆 Introduction to network analysis
+- 14:30~15:20 吳冠賢 Using rtweet packages to get twitter data
+- 15:30~16:20 吳冠賢 Network analysis on deleted China accounts
 
 # 分析案例
 - [Twitter Safety(2019-08-19). Information operations directed at Hong Kong](https://blog.twitter.com/en_us/topics/company/2019/information_operations_directed_at_Hong_Kong.html)
