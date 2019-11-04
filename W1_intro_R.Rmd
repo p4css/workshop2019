@@ -1,0 +1,209 @@
+---
+title: "p1_IntroR"
+author: "Jilung Hsieh"
+date: "2019/10/28"
+output:
+  html_document:
+    theme: spacelab
+    highlight: zenburn
+    toc: yes
+    toc_float:
+      collapsed: no
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+<style>
+    .tocify-header{color:darkred; font-size:16px;}
+    .tocify-subheader{color:tomato; font-size:14px;}
+    h1{color:darkred; font-size:40px;}
+    h2{color:tomato; font-size:24px;}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# 00 Preparing 開發環境準備
+
+## 0.1 Installing essential pacgages 安裝套件
+- 挑選工作坊相關
+
+```{r}
+# source("W0_install_pkgs.R")
+```
+
+
+## 0.2 Loading libraries and global options 
+
+```{r}
+library(tidyverse)
+options(stringsAsFactors = F)
+```
+
+# 01 Basic operations of R
+
+# 1.0 Executing code
+- 這裏是個個人用markdown語法寫註解的地方，下面方塊才是個程式碼。
+- 在程式碼方塊，選擇一或多行，用**cmd+Enter (Win: ctrl+Enter)**來執行程式碼；
+- 或，點按程式碼方塊右上方的**►**。來執行整個程式碼方塊；
+- 或，使用**shift+cmd+Enter (Win: shift+ctrl+Enter)**來執行整個程式碼方塊。
+```{r}
+print("hehehehe")
+```
+
+
+# 1.1 Assignments
+- Using `<-` symbol to assing an object on the right to a variable on the left
+
+```{r}
+a <- c(1, 2, 3, 4, 5)
+b <- c(3, 4, 5, 6, 7)
+d <- a + b
+```
+
+
+
+# 02 Reading data 讀取資料
+
+## 2.1 Reading CSV
+- Reading csv by package `tidyr`'s `read_csv()` function.
+
+```{r}
+users_1 <- read_csv("data/china_082019_1_users_csv_hashed.csv")
+```
+
+
+
+## 2.1p (Practice) Reading data
+- Uncommenting the incomplete code by keyboard shortcut **ctrl+shift+c (Mac: cmd+shift+c)**
+- Loading set1 tweets data by `read_csv()` and assigning to variable `tweets_1`
+- Loading set2 users data by `read_csv()` and assigning to variable `users_2`
+- Loading set2 tweets data by `read_csv()` and assigning to variable `tweets_2`
+
+```{r}
+# tweets_1 <- 
+# users_1 <- 
+# tweets_2 <- 
+```
+
+
+
+# 03 Previewing data 觀察資料
+- `glimpse()`: Overviewing variables, types, and examples
+- `dim()`: dimensions of data, row x col, observsations of variables.
+- `class()`: variable types
+- `View()` and `head()`: previewing sample data
+- `summary()`: quick viewing data value distribution
+
+```{r}
+glimpse(users1)
+users1 %>% glimpse()
+
+dim(users1)
+users1 %>% dim
+
+
+class(users1)
+users1 %>% class
+
+
+# View(users1)
+# users1 %>% View 
+
+# View(head(users1))
+# users1 %>% head %>% View
+users1 %>% head 
+
+
+# summary(users1)
+users1 %>% summary
+```
+
+
+
+## (Practice) Previewing variable tweets1 or tweets2
+- What are the data type of variables `account_creation_date`, `is_retweet`, and `tweet_time`?
+
+```{r}
+
+```
+
+
+
+## (Options) Previewing data by skimr
+```{r}
+# install.packages("skimr")
+library(skimr)
+users1 %>% skim()
+```
+
+
+
+# Data manipulation by dplyr
+- `select()`: selecting essential columns (variables) for computing
+- `filter()`: filtering in data fitting specific condition
+- `mutate()`: mutating(creating) new variable by arithmetic or logical operations
+
+## Selecting columns 選擇所要的變項欄
+- `select()`: selecting essential columns (variables) for computing
+
+```{r}
+# selected <- select(users, userid, user_display_name, user_screen_name)
+selected <- users1 %>% 
+    select(userid, user_display_name, user_screen_name)
+```
+
+
+
+## Filter rows 篩選某變項符合條件的資料
+- `filter()`: filtering in data fitting specific condition
+
+```{r}
+users1 %>%
+    filter(nchar(user_screen_name) > 20)
+```
+
+
+
+## Mutate() to create new variable
+
+```{r}
+users1 %>% 
+    mutate(ff_perc = follower_count / following_count)
+```
+
+
+
+## Counting observations
+
+```{r}
+users1 %>%
+    count(account_language)
+
+users1 %>%
+    count(account_language, sort = T)
+```
+
+
+
+# Loading tweets data
+
+```{r eval=FALSE, include=FALSE}
+tweets <- read_csv("data/china_082019_1_tweets_csv_hashed.csv")
+```
+
+
+
+# Cleaning data
+
+## Converting data type
+1. converting data type, e.g., numeric id to character id
+2. converting character timestamp to R datetime for time manipulation
+
+```{r eval=FALSE, include=FALSE}
+tweets %>%
+    mutate(tweetid = as.character(tweetid)) %>%
+    mutate(userid = as.character(userid)) %>% glimpse()
+```

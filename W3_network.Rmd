@@ -1,0 +1,270 @@
+---
+title: "Network Analaysis"
+author: "Meg Wu"
+date: "2019/10/28"
+output:
+  html_document:
+    theme: spacelab
+    highlight: zenburn
+    toc: yes
+    toc_float:
+      collapsed: no
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+
+<style>
+    .tocify-header{color:darkred; font-size:16px;}
+    .tocify-subheader{color:tomato; font-size:14px;}
+    h1{color:darkred; font-size:40px;}
+    h2{color:tomato; font-size:24px;}
+</style>
+
+
+# The method: Network Analysis
+- Like，就是按讚
+- Follow，追蹤
+- Retweet，轉推（RT@）。此教學案例所定義的「互動」以轉推為主
+- Reply，回推
+- Mention，提到某人
+- 例子: https://twitter.com/lazysundaytalk/status/1174210332014915584
+
+
+
+# 00 Preparing data
+
+## 0.3 Loading packages
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(igraph)
+```
+
+
+
+## 0.2 Loading data
+
+```{r}
+tweets_1 <- read_csv("data/china_082019_1_tweets_csv_hashed.csv")
+tweets_2 <- read_csv("data/china_082019_2_tweets_csv_hashed.csv")
+users_1 <- read_csv("data/china_082019_1_users_csv_hashed.csv")
+users_2 <- read_csv("data/china_082019_2_users_csv_hashed.csv")
+```
+
+## 0.3 Previewing data
+```{r}
+tweets_1 %>% glimpse()
+```
+
+
+# 01 Building network data
+
+## 1.1 Extracting RT relations
+
+```{r}
+
+# Filtering RT relation (366,253 out of 1,906.831)
+rt_1 <- tweets_1 %>%
+    select(user_screen_name, tweet_text, tweet_time) %>%
+    filter(str_detect(tweet_text, "RT @"))
+
+# Detecting retweet targets
+rt_edge_1 <- rt_1 %>%
+    mutate(rt_time = str_count(tweet_text, "RT @\\w+")) %>%
+    filter(rt_time == 1) %>%
+    mutate(to = str_extract(tweet_text, "RT @\\w+")) %>%
+    mutate(to = str_sub(to, 5, nchar(to))) %>%
+    select(from = user_screen_name, to, tweet_time)
+
+rt_edge <- rt_1 %>%
+    mutate(rt_time = str_count(tweet_text, "RT @\\w+")) %>%
+    filter(rt_time > 1) %>%
+    mutate(to = str_extract_all(tweet_text, "RT @\\w+")) %>%
+    unnest(to) %>%
+    mutate(to = str_sub(to, 5, nchar(to))) %>%
+    select(from = user_screen_name, to, tweet_time) %>%
+    bind_rows(rt_edge_1)
+```
+
+## 1.2 Extracting innert group RT relations
+
+```{r}
+rt_edge_inner <- rt_edge %>%
+    filter(to %in% c(users_1$user_screen_name, users_2$user_screen_name))
+```
+
+
+
+# 02 Network data analysis
+
+## 2.1 data frame to network
+
+```{r}
+g <- rt_edge_inner %>% 
+    mutate(year = year(tweet_time)) %>%
+    count(from, to, year) %>%
+    # filter(n > 15) %>%
+    select(from, to, year, weight = n) %>%
+    graph.data.frame(directed = T)
+```
+
+
+
+## 2.2 Inspecting vertices(V) and edges(E)
+
+```{r}
+E(g)$weight
+E(g)$year
+
+# V(g)
+# V(g)$name
+```
+
+## 2.3 Detecting communities
+```{r}
+
+# Detecting community by information flow
+V(g)$comm <- membership(infomap.community(g))
+# V(g)$comm
+table(V(g)$comm)
+```
+
+
+
+## 2.4 Computing vertices properties
+
+```{r}
+
+# centrality degree
+V(g)$degree <- degree(g, mode="all")
+
+# in-degree: interaction from out to in.
+V(g)$indegree <- degree(g, mode="in")
+
+#out-degree: Interaction from in to out
+V(g)$outdegree <- degree(g, mode="out")
+
+# closeness centrality: average of the shortest path length to other nodes
+V(g)$closeness <- centralization.closeness(g)$res
+
+# betweenness centrality: bridging degree of vertices
+V(g)$betweenness <- centralization.betweenness(g)$res
+
+```
+
+## 2.5 Tabulating node properties
+```{r}
+nodes_all <- data.frame(name = V(g)$name,
+                        degree = V(g)$degree,
+                        indegree = V(g)$indegree,
+                        outdegree = V(g)$outdegree,
+                        closeness = V(g)$closeness,
+                        community = V(g)$comm,
+                        betweeness =V(g)$betweenness)
+```
+
+
+
+# 03 Network Visualization
+
+## 3.1 Basic plotting
+
+```{r}
+plot(g)
+plot(g, edge.arrow.size = .4, vertex.label = NA)
+```
+
+
+## 3.2 Plotting vertices degree distribution
+
+```{r}
+plot(degree.distribution(g, cumulative=T), pch=20, xlab="degree", ylab="cumulative frequency")
+```
+
+
+## 3.3 Better network plotting
+
+```{r}
+l <- layout.fruchterman.reingold(g)
+# l <- layout_with_kk(g)
+
+plot(g, 
+     layout = l,
+     vertex.color = rgb(1, 1, 0, 0.2),
+     vertex.size  = sqrt(V(g)$degree)*3,
+     vertex.frame.color= rgb(0, 0, 0, 0.5),
+     vertex.label = str_sub(V(g)$name, 1, 10),
+     vertex.label.cex = 0.6,
+     vertex.label.color = rgb(0, 0, 0, 0.5),
+     edge.curved = 0.1,
+     edge.arrow.size = 0, 
+     edge.width = sqrt(E(g)$weight+1),
+     edge.color = E(g)$year
+     )
+```
+
+
+
+# 04 Interaction analysis
+
+```{r}
+hk_tweets <- tweets_1 %>%
+    filter(tweet_time > as.Date("2019-06-05"))
+    
+hk_users <- hk_tweets %>%
+    count(user_screen_name) %>%
+    arrange(-n)
+
+hk_rt <- hk_tweets %>%
+    filter(str_detect(tweet_text, "RT @"))
+
+hk_rt_user <- hk_rt %>%
+    count(user_screen_name) %>%
+    arrange(-n)
+
+#比較反送中前後互動數
+compare<-hk_tweets_1%>%
+    mutate(anti_extra=ifelse(tweet_time>as.Date("2019-06-05",origin = "1970-01-01"),"after","before"))%>%
+    mutate(rt=ifelse(str_detect(tweet_text,"RT @"),TRUE,FALSE))%>%
+    filter(rt==TRUE)%>% 
+    mutate(date=date(tweet_time))%>%
+    select(user_screen_name,tweet_text,date,anti_extra)%>%
+    count(anti_extra)
+
+#互動線段
+anti_edge<-anti_extra_rt%>%
+    mutate(rt=str_extract_all(tweet_text, "RT @\\w+"))%>%
+    unnest(rt)%>%
+    mutate(target=substr(rt,5,nchar(rt)))%>%
+    select(user_screen_name,target,date)%>%
+    rename(screen_name=user_screen_name)
+
+#分析
+graph_anti <- graph.data.frame(anti_edge[ ,1:2], directed = T)
+graph_anti <- graph.adjacency(get.adjacency(graph_anti),weighted=TRUE)
+E(graph_anti)$weight
+
+V(graph_anti)$comm <- membership(infomap.community(graph_anti))
+#看看每個社群的人數
+table(V(graph_anti)$comm)
+V(graph_anti)$degree <- degree(graph_anti, mode="all")
+V(graph_anti)$indegree <- degree(graph_anti, mode="in")
+V(graph_anti)$outdegree <- degree(graph_anti, mode="out")
+V(graph_anti)$closeness <- centralization.closeness(graph_anti)$res
+V(graph_anti)$betweenness <- centralization.betweenness(graph_anti)$res
+
+#網絡圖
+plot(graph_anti)
+plot(graph_anti, edge.arrow.size=.4,vertex.label=NA)
+plot(degree.distribution(graph_anti, cumulative=T), pch=20,xlab="degree", ylab="cumulative frequency")
+#nodes table 可以觀察每一個節點的互動特性
+nodes_anti <- data.frame(name = V(graph_anti)$name,
+                        degree = V(graph_anti)$degree,
+                        indegree = V(graph_anti)$indegree,
+                        outdegree = V(graph_anti)$outdegree,
+                        closeness = V(graph_anti)$closeness,
+                        community = V(graph_anti)$comm,
+                        betweeness =V(graph_anti)$betweenness)
+```
