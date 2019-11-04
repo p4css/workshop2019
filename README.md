@@ -7,7 +7,7 @@
 - 09:30~10:20 謝吉隆 Opening and R tutorials
 - 10:40~11:30 許家瑜 dplyr for demographic analysis
 - 11:40~12:30 許家瑜 Retrieving tweets relevant to HK antiELAB
-~ Lunch break~
+Lunch break
 - 13:30~14:20 謝吉隆 Introduction to network analysis
 - 14:30~15:20 吳冠賢 Using rtweet packages to get twitter data
 - 15:30~16:20 吳冠賢 Network analysis on deleted China accounts
