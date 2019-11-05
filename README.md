@@ -4,7 +4,7 @@
 - 工作人員：陳子萱
 - [Join the facebook group: remixed.tw](https://www.facebook.com/groups/remixed.tw)
 
-# 課程時間
+# 工作坊議程
 - 09:30~10:20 謝吉隆 開場、工作坊說明、R語言速遊
 - 10:40~11:30 許家瑜 探索性分析：使用dplyr套件
 - 11:40~12:30 許家瑜 萃取並分析香港反佔中事件相關tweets
