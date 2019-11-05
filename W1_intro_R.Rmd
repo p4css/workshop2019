@@ -70,9 +70,10 @@ print("hihihihi")
 - 用`library()`載入已經安裝好的套件
 - 用`options()`新增適用於整份程式碼（全域）的參數值
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 options(stringsAsFactors = F)
+options(scipen = 999) # avoid scientific notion in R
 ```
 
 
@@ -302,9 +303,65 @@ users_1 %>%
     count(account_language, sort = T)
 ```
 
+## 5.2 Counting the number of tweets by year
+```{r}
+library(lubridate)
+tweets_1 %>%
+    mutate(year = year(tweet_time)) %>%
+    count(year)
+```
+
 
 # 06 用ggplot2視覺化
 ```{r}
+library(bbplot)
 
+tweets_1 %>%
+    mutate(year = year(tweet_time)) %>%
+    count(year) %>%
+    ggplot() + aes(year, n) + 
+    geom_col(fill = "royalblue") +
+    bbc_style()
+```
+
+```{r}
+tweets_1 %>%
+    mutate(month = floor_date(tweet_time, unit = "month")) %>%
+    count(month) %>%
+    ggplot() + aes(as.Date(month), n) +
+    # geom_line(color = "royalblue") +
+    geom_area(fill = "royalblue") +
+    # geom_step(color = "royalblue") + 
+    bbc_style() + 
+    geom_vline(xintercept = as.Date(c("2019-01-01", "2018-01-01", "2017-01-01", "2019-06-05")), color="red", alpha=0.5)
+```
+
+
+```{r}
+tweets_1 %>%
+    mutate(date = date(tweet_time)) %>%
+    count(date) %>%
+    mutate(month = month(date)) %>%
+    mutate(wday = wday(date)) %>%
+    mutate(year = year(date)) %>%
+    mutate(week = week(date)) %>%
+    mutate(ym = str_c(year, "_", month)) %>% 
+    group_by(ym) %>%
+    mutate(week = 1 + week - min(week)) %>%
+    ungroup() %>%
+    ggplot() + aes(week, wday, fill=  n) + 
+    geom_tile(color = "white") + 
+    scale_fill_gradient(low="gold", high="royalblue") +
+    facet_grid(year~month) + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          legend.background = element_blank(),
+          strip.background = element_rect(fill="white"),
+          strip.text = element_text(size  = 16,  hjust = 0))
+    
+    
+    
 ```
 
