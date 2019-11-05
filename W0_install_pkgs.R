@@ -13,7 +13,7 @@
 # bbplot, built by bbc team, defines publising format of R, 
 # bbplot, see https://bbc.github.io/rcookbook/
 
-pkgs <- c("tidyverse", "jiebaR", "rtweet", "tidytext", "igraph", "bbplot")
+pkgs <- c("tidyverse", "jiebaR", "rtweet", "tidytext", "widyr", "igraph", "bbplot")
 
 # installing packages not in the computer
 pkgs <- pkgs[!(pkgs %in% installed.packages()[,"Package"])] 

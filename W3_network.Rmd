@@ -339,5 +339,74 @@ plot(g_hk,
 ```
 
 
+# (Option 1) Co-RT relationship
+```{r}
+library(widyr)
 
+hk_rt_edgelist$from %>% unique() %>% length
+hk_rt_edgelist$to %>% unique() %>% length
+
+g_co_rt <- hk_rt_edgelist %>%
+    filter(date0605 == "after") %>%
+    pairwise_count(from, to, sort = TRUE) %>%
+    filter(n > 1) %>%
+    select(from = item1, to = item2, weight = n) %>%
+    graph.data.frame(directed = F)
+
+V(g_co_rt)$degree <- degree(g_co_rt, mode="all")
+    
+l <- layout.kamada.kawai(g_co_rt)
+# l <- layout_nicely(g_co_rt)
+
+plot(g_co_rt, 
+     layout = l,
+     vertex.color = rgb(1, 1, 0, 0.5),
+     vertex.size  = sqrt(V(g_co_rt)$degree),
+     vertex.frame.color= rgb(0, 0, 0, 0.5),
+     vertex.label = str_sub(V(g_co_rt)$name, 1, 10),
+     vertex.label.cex = 0.6,
+     vertex.label.color = rgb(0, 0, 0, 0.5),
+     edge.curved = .1,
+     edge.width = E(g_co_rt)$weight/10,
+     edge.label = E(g_co_rt)$weight,
+     edge.label.cex = 0.4
+     )
+```
+
+
+# (Option 2) RT-Co relationship
+```{r}
+library(widyr)
+
+hk_rt_edgelist$from %>% unique() %>% length
+hk_rt_edgelist$to %>% unique() %>% length
+
+g_rt_co <- hk_rt_edgelist %>%
+    filter(date0605 == "after") %>%
+    pairwise_count(to, from, sort = TRUE) %>%
+    filter(n > 1) %>%
+    select(from = item1, to = item2, weight = n) %>%
+    graph.data.frame(directed = F)
+
+V(g_rt_co)$degree <- degree(g_rt_co, mode="all")
+V(g_rt_co)$deleted <- if_else(V(g_rt_co)$name %in% users_1$user_screen_name, 
+                           rgb(1, 0.25, 0, 0.3), rgb(0, 0, 0, 0.1))
+    
+l <- layout.kamada.kawai(g_rt_co)
+# l <- layout_nicely(g_rt_co)
+
+plot(g_rt_co, 
+     layout = l,
+     vertex.color = V(g_rt_co)$deleted,
+     vertex.size  = sqrt(V(g_rt_co)$degree),
+     vertex.frame.color= rgb(0, 0, 0, 0.5),
+     vertex.label = str_sub(V(g_rt_co)$name, 1, 10),
+     vertex.label.cex = 0.6,
+     vertex.label.color = rgb(0, 0, 0, 0.5),
+     edge.curved = .1,
+     edge.width = E(g_rt_co)$weight/10,
+     edge.label = E(g_rt_co)$weight,
+     edge.label.cex = 0.4
+     )
+```
 
