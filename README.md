@@ -3,6 +3,7 @@
 - 助教: 曾子軒、邱怡瑄、連俊翔
 - 工作人員：陳子萱
 - [Join the facebook group: remixed.tw](https://www.facebook.com/groups/remixed.tw)
+- [行前通知](https://docs.google.com/document/d/1Ap4mfp8stCQNOGRMqArdk_x0j2sGeDP0pyXP78phP0Q/edit?usp=sharing)
 
 # 工作坊議程
 - 09:30~10:20 謝吉隆 開場、工作坊說明、R語言速遊
@@ -17,13 +18,6 @@
 - [Twitter Safety(2019-08-19). Information operations directed at Hong Kong](https://blog.twitter.com/en_us/topics/company/2019/information_operations_directed_at_Hong_Kong.html)
 - [蘋果日報（2019-08-21）。港大傅景華：反送中燃起國際信息戰狼煙](https://tw.appledaily.com/new/realtime/20190821/1620095/)
 - [READr（2019-08-22）。Twitter 大戰中國網軍！？解密被刪帳號資料集](https://www.readr.tw/post/2013)
-
-# 行前通知
-1. 請先從右上角下載本github repo，並解壓縮至個人電腦。
-2. 下載以下資料集（[Deleted accounts and tweets](https://www.dropbox.com/s/nix3qai2giu3lss/data.zip?dl=0), 1.57GB, Very large），並將資料集內的.csv檔案拖至前步驟資料夾中的data資料夾內。或下載[presave.rda](https://www.dropbox.com/s/3owujqk574cnnyc/presave.rda?dl=0)檔，一樣放入data資料夾，以備使用。
-3. 依照影片內容設定環境
-4. 依照影片內容了解Ｒ的基本使用
-
 
 # Workshop slides
 
