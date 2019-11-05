@@ -18,6 +18,7 @@ editor_options:
     .tocify-subheader{color:tomato; font-size:14px;}
     h1{color:darkred; font-size:40px;}
     h2{color:tomato; font-size:24px;}
+    strong {background-color:yellow;}
 </style>
 
 # 01 Prepare
@@ -35,7 +36,7 @@ options(scipen = 999) # avoid scientific notion in R
 
 ## 1.2  The data
 - 資料集分成set1、set2，每個set裡面分別有帳號集(users)以及推文集(tweets), 分別assign給四個variables, users_1, users_2, tweets_1, tweets_2.
-- 若電腦不夠存，`load(file = "twitterdata.rda")`
+- 若電腦不夠存，`load("data/presave.rda")`
 
 
 ```{r echo=TRUE}
@@ -49,7 +50,7 @@ tweets_1 <- read_csv("data/china_082019_1_tweets_csv_hashed.csv")
 tweets_2 <- read_csv("data/china_082019_2_tweets_csv_hashed.csv")
 
 # Loading pre-saving rda
-# load("twitterdata.rda")
+# load("data/presave.rda")
 ```
 
 
@@ -96,6 +97,8 @@ users_1 %>%
 ## 3.1 plotting users_1 account creating date
 
 ```{r}
+library(bbplot)
+
 users_1 %>%
     ggplot() + 
     aes(account_creation_date) + 
@@ -231,16 +234,25 @@ tweets_1 %>% glimpse()
 tweets_1 <- tweets_1 %>% 
     mutate(dataset = "set1") %>%
     mutate(tweetid = as.character(tweetid)) %>%
-    mutate(userid = as.character(userid))
+    mutate(userid = as.character(userid)) %>%
+    mutate(in_reply_to_userid  = as.character(in_reply_to_userid)) %>%
+    mutate(in_reply_to_tweetid = as.character(in_reply_to_tweetid))
+    
+    
 
 # Converting datatype of set 2
 tweets_2 <- tweets_2 %>% 
     mutate(dataset = "set2") %>%
     mutate(tweetid = as.character(tweetid)) %>%
-    mutate(userid = as.character(userid))
+    mutate(userid = as.character(userid)) %>%
+    mutate(retweet_userid = as.character(retweet_userid)) %>%
+    mutate(retweet_tweetid = as.character(retweet_tweetid))
 
 # Binding (combining) tweets of set1 and set2
 all_tweets <- bind_rows(tweets_1, tweets_2)
+
+# tweets_1$retweet_userid %>% class
+# tweets_2$retweet_userid %>% class
 
 ```
 
@@ -274,7 +286,7 @@ hk_tweets %>%
     count(dataset)
 
 # Previewing set2
-hk_tweets%>%
+hk_tweets %>%
     filter(dataset == "set2")
 ```
 

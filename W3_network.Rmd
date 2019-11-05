@@ -19,6 +19,7 @@ editor_options:
     .tocify-subheader{color:tomato; font-size:14px;}
     h1{color:darkred; font-size:40px;}
     h2{color:tomato; font-size:24px;}
+    strong {background-color:yellow;}
 </style>
 
 
@@ -102,6 +103,8 @@ rt_edge_inner <- rt_edge %>%
 ## 2.1 data frame to network
 
 ```{r}
+library(igraph)
+
 g <- rt_edge_inner %>% 
     mutate(year = year(tweet_time)) %>%
     count(from, to, year) %>%
@@ -209,62 +212,103 @@ plot(g,
 
 # 04 Interaction analysis
 
+## 4.1 Extracting accounts and tweets related to hk anti-extract
+- After 2019-01-01
+
 ```{r}
+# Keywords to detect
+detects <- "港警|逃犯條例|反修例|遊行|修例|反送中|anti-extradition|hongkong|hkpolicebrutality|soshk|hongkongprotesters|HongKongPolice|hkpoliceforce|freedomHK|antiELAB|HongKongProtests|antiextraditionlaw|HongKongProtest|七一|游行|民阵|HongKong|逃犯条例|民陣|撐警|香港眾志|HongKongProterst|林鄭|警队|力撑"
+
 hk_tweets <- tweets_1 %>%
-    filter(tweet_time > as.Date("2019-06-05"))
-    
-hk_users <- hk_tweets %>%
-    count(user_screen_name) %>%
-    arrange(-n)
+    filter(tweet_time > as.Date("2019-01-01")) %>%
+    mutate(hits = str_extract_all(tweet_text, detects)) %>%
+    drop_na(hits)
 
-hk_rt <- hk_tweets %>%
-    filter(str_detect(tweet_text, "RT @"))
-
-hk_rt_user <- hk_rt %>%
-    count(user_screen_name) %>%
-    arrange(-n)
-
-#比較反送中前後互動數
-compare<-hk_tweets_1%>%
-    mutate(anti_extra=ifelse(tweet_time>as.Date("2019-06-05",origin = "1970-01-01"),"after","before"))%>%
-    mutate(rt=ifelse(str_detect(tweet_text,"RT @"),TRUE,FALSE))%>%
-    filter(rt==TRUE)%>% 
-    mutate(date=date(tweet_time))%>%
-    select(user_screen_name,tweet_text,date,anti_extra)%>%
-    count(anti_extra)
-
-#互動線段
-anti_edge<-anti_extra_rt%>%
-    mutate(rt=str_extract_all(tweet_text, "RT @\\w+"))%>%
-    unnest(rt)%>%
-    mutate(target=substr(rt,5,nchar(rt)))%>%
-    select(user_screen_name,target,date)%>%
-    rename(screen_name=user_screen_name)
-
-#分析
-graph_anti <- graph.data.frame(anti_edge[ ,1:2], directed = T)
-graph_anti <- graph.adjacency(get.adjacency(graph_anti),weighted=TRUE)
-E(graph_anti)$weight
-
-V(graph_anti)$comm <- membership(infomap.community(graph_anti))
-#看看每個社群的人數
-table(V(graph_anti)$comm)
-V(graph_anti)$degree <- degree(graph_anti, mode="all")
-V(graph_anti)$indegree <- degree(graph_anti, mode="in")
-V(graph_anti)$outdegree <- degree(graph_anti, mode="out")
-V(graph_anti)$closeness <- centralization.closeness(graph_anti)$res
-V(graph_anti)$betweenness <- centralization.betweenness(graph_anti)$res
-
-#網絡圖
-plot(graph_anti)
-plot(graph_anti, edge.arrow.size=.4,vertex.label=NA)
-plot(degree.distribution(graph_anti, cumulative=T), pch=20,xlab="degree", ylab="cumulative frequency")
-#nodes table 可以觀察每一個節點的互動特性
-nodes_anti <- data.frame(name = V(graph_anti)$name,
-                        degree = V(graph_anti)$degree,
-                        indegree = V(graph_anti)$indegree,
-                        outdegree = V(graph_anti)$outdegree,
-                        closeness = V(graph_anti)$closeness,
-                        community = V(graph_anti)$comm,
-                        betweeness =V(graph_anti)$betweenness)
+# hk_users <- hk_tweets %>% 
+#     count(user_screen_name, sort = T)
+# 
+# hk_rt <- hk_tweets %>% 
+#     filter(str_detect(tweet_text, "RT @"))
+# 
+# hk_rt_user <- hk_rt %>%
+#     count(user_screen_name, sort = T)
 ```
+
+
+## 4.2 Comparing rt actions before and after 2019-06-05
+- before: 2019-01-01 ~ 2019-06-04
+- after: 2019-06-05 ~
+
+```{r}
+hk_rt_compare <- hk_tweets %>%
+    mutate(anti_extract = if_else(tweet_time > as.Date("2019-06-05"), 
+                                  "after", "before")) %>%
+    filter(str_detect(tweet_text,"RT @")) %>%
+    mutate(date = date(tweet_time)) %>%
+    select(user_screen_name, tweet_text, date, anti_extract)
+    
+hk_rt_compare  %>% count(anti_extract)
+```
+
+## 4.3 Plotting before and after
+```{r}
+
+# Building rt edgelist of hk related tweets
+hk_rt_edgelist <- hk_rt_compare %>%
+    mutate(rt = str_extract_all(tweet_text, "RT @\\w+"))%>%
+    unnest(rt) %>%
+    mutate(to = substr(rt,5,nchar(rt))) %>%
+    select(from = user_screen_name, to, anti_extract)
+    
+
+# Building graph: converting from edgelist
+g_rt <- hk_rt_edgelist %>% 
+    count(from, to, anti_extract) %>%
+    select(from, to, anti_extract, weight = n) %>%
+    graph.data.frame(directed = T)
+
+# Examing network properties: communities
+V(g_rt)$comm <- membership(infomap.community(g_rt))
+table(V(g_rt)$comm)
+
+# Examing ego-network properties
+V(g_rt)$degree <- degree(g_rt, mode="all")
+V(g_rt)$indegree <- degree(g_rt, mode="in")
+V(g_rt)$outdegree <- degree(g_rt, mode="out")
+V(g_rt)$closeness <- centralization.closeness(g_rt)$res
+V(g_rt)$betweenness <- centralization.betweenness(g_rt)$res
+
+# Saving network properties into a table
+nodes_hk_rt <- data_frame(name = V(g_rt)$name,
+                        degree = V(g_rt)$degree,
+                        indegree = V(g_rt)$indegree,
+                        outdegree = V(g_rt)$outdegree,
+                        closeness = V(g_rt)$closeness,
+                        community = V(g_rt)$comm,
+                        betweeness =V(g_rt)$betweenness)
+
+
+# Plotting network
+plot(g_rt)
+plot(g_rt, edge.arrow.size=.4,vertex.label=NA)
+plot(degree.distribution(g_rt, cumulative=T), pch=20,xlab="degree", ylab="cumulative frequency")
+
+
+# Better network plotting
+l <- layout.fruchterman.reingold(g_rt)
+
+plot(g_rt, 
+     layout = l,
+     vertex.color = rgb(1, 1, 0, 0.2),
+     vertex.size  = sqrt(V(g_rt)$degree)*3,
+     vertex.frame.color= rgb(0, 0, 0, 0.5),
+     vertex.label = str_sub(V(g_rt)$name, 1, 10),
+     vertex.label.cex = 0.6,
+     vertex.label.color = rgb(0, 0, 0, 0.5),
+     edge.curved = .1,
+     edge.arrow.size = .1, 
+     edge.width = sqrt(E(g_rt)$weight+1),
+     edge.color = factor(E(g_rt)$anti_extract)
+     )
+```
+
