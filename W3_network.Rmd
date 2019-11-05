@@ -37,7 +37,7 @@ editor_options:
 
 ## 0.3 Loading packages
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse) # coding with tidy style 
 library(lubridate) # processing time
 library(igraph) # plotting network
@@ -193,7 +193,7 @@ plot(g, edge.arrow.size = .4, vertex.label = NA)
 ```
 
 
-## 3.2 Plotting vertices degree distribution
+## 3.2 (Option) Plotting vertices degree distribution
 
 ```{r}
 plot(degree.distribution(g, cumulative=T), pch=20, xlab="degree", ylab="cumulative frequency")
@@ -230,7 +230,7 @@ plot(g,
 # 04 Plotting network only for hk-anti-extraction
 
 ## 4.1 Extracting accounts and tweets related to hk anti-extract
-- After 2019-01-01
+- Tweets ate after 2019-01-01
 - Copy from W2_dplyr.rmd
 
 ```{r}
@@ -309,7 +309,7 @@ nodes_hk_rt <- data_frame(name = V(g_hk)$name,
 
 ## 4.5 Plotting network
 
-```{r}
+```
 # Plotting network
 plot(g_hk)
 plot(g_hk, edge.arrow.size=.4,vertex.label=NA)
@@ -321,7 +321,7 @@ plot(degree.distribution(g_hk, cumulative=T), pch=20,xlab="degree", ylab="cumula
 
 ```{r}
 # Better network plotting
-l <- layout.fruchterman.reingold.grid(g_hk)
+l <- layout.fruchterman.reingold(g_hk)
 
 plot(g_hk, 
      layout = l,
@@ -339,7 +339,9 @@ plot(g_hk,
 ```
 
 
+
 # (Option 1) Co-RT relationship
+
 ```{r}
 library(widyr)
 
@@ -374,12 +376,14 @@ plot(g_co_rt,
 ```
 
 
+
 # (Option 2) RT-Co relationship
+
 ```{r}
 library(widyr)
 
-hk_rt_edgelist$from %>% unique() %>% length
-hk_rt_edgelist$to %>% unique() %>% length
+# hk_rt_edgelist$from %>% unique() %>% length
+# hk_rt_edgelist$to %>% unique() %>% length
 
 g_rt_co <- hk_rt_edgelist %>%
     filter(date0605 == "after") %>%

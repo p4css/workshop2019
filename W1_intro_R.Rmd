@@ -302,3 +302,9 @@ users_1 %>%
     count(account_language, sort = T)
 ```
 
+
+# 06 用ggplot2視覺化
+```{r}
+
+```
+
