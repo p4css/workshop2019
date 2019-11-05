@@ -2,6 +2,7 @@
 - 講者: 謝吉隆、許家瑜、吳冠賢
 - 助教: 曾子軒、邱怡瑄、連俊翔
 - 工作人員：陳子萱
+- [Join the facebook group](https://www.facebook.com/groups/remixed.tw)
 
 # 課程時間
 - 09:30~10:20 謝吉隆 Opening and R tutorials
