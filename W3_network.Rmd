@@ -225,16 +225,13 @@ plot(g,
      )
 ```
 
-## 3.4 Practice
-```{r}
-
-```
 
 
-# 04 Practice: Plotting network only for hk-anti-extraction
+# 04 Plotting network only for hk-anti-extraction
 
 ## 4.1 Extracting accounts and tweets related to hk anti-extract
 - After 2019-01-01
+- Copy from W2_dplyr.rmd
 
 ```{r}
 # Keywords to detect
@@ -247,7 +244,7 @@ hk_tweets <- tweets_1 %>%
 ```
 
 
-## 4.2 Comparing rt actions before and after 2019-06-05
+## 4.2 Segmenting RT actions before and after 2019-06-05
 - before: 2019-01-01 ~ 2019-06-04
 - after: 2019-06-05 ~
 
@@ -256,26 +253,29 @@ hk_rt_compare <- hk_tweets %>%
     mutate(date0605 = if_else(tweet_time > as.Date("2019-06-05"), 
                                   "after", "before")) %>%
     filter(str_detect(tweet_text,"RT @")) %>%
-    mutate(date = date(tweet_time)) %>%
-    select(user_screen_name, tweet_text, date, date0605)
+    select(user_screen_name, tweet_text, date0605)
     
 hk_rt_compare  %>% count(date0605)
 ```
 
-## 4.3 Plotting before and after
+
+## 4.3 Segmenting data before and after 2019-06-05
+
 ```{r}
 
 # Building rt edgelist of hk related tweets
 hk_rt_edgelist <- hk_rt_compare %>%
     mutate(rt = str_extract_all(tweet_text, "RT @\\w+")) %>%
     unnest(rt) %>%
-    mutate(to = substr(rt, 5, nchar(rt))) %>%
+    mutate(to = str_sub(rt, 5, nchar(rt))) %>%
     # filter(to %in% users_1$user_screen_name) %>%
     select(from = user_screen_name, to, date0605)
-    
-    
-    
+```
 
+
+## 4.4 Building network
+
+```{r}
 # Building graph: converting from edgelist
 g_hk <- hk_rt_edgelist %>% 
     count(from, to, date0605) %>%
@@ -304,14 +304,22 @@ nodes_hk_rt <- data_frame(name = V(g_hk)$name,
                         community = V(g_hk)$comm,
                         betweeness =V(g_hk)$betweenness,
                         deleted = V(g_hk)$deleted)
+```
 
 
+## 4.5 Plotting network
+
+```{r}
 # Plotting network
 plot(g_hk)
 plot(g_hk, edge.arrow.size=.4,vertex.label=NA)
 plot(degree.distribution(g_hk, cumulative=T), pch=20,xlab="degree", ylab="cumulative frequency")
+```
 
 
+## 4.6 Better plotting
+
+```{r}
 # Better network plotting
 l <- layout.fruchterman.reingold.grid(g_hk)
 
@@ -329,4 +337,7 @@ plot(g_hk,
      edge.color = factor(E(g_hk)$date0605)
      )
 ```
+
+
+
 
