@@ -115,7 +115,7 @@ users_1 <- read_csv("data/china_082019_1_users_csv_hashed.csv")
 
 
 ## 2.1p (Practice) 讀取資料
-- 用快速鍵**Mac: shift+cmd+c or Win: shift+ctrl+c**將註解取消
+- 用快速鍵**Mac: shift+cmd+c or Win: shift+ctrl+c**將前三行註解取消
 - 同上，用`read_csv()`讀取set1的tweets資料並assign給新變數`tweets_1`。
 - 同上，用`read_csv()`讀取set2的users資料並assign給新變數`users_1`。
 - 同上，用`read_csv()`讀取set2的tweets資料並assign給新變數`tweets_2`。
@@ -124,6 +124,8 @@ users_1 <- read_csv("data/china_082019_1_users_csv_hashed.csv")
 # tweets_1 <- 
 # users_1 <- 
 # tweets_2 <- 
+
+# source("sol/2_1p_sol.R")
 ```
 
 
@@ -184,7 +186,7 @@ users_1 %>% summary
 users_1$follower_count
 users_1$follower_count %>% class
 
-users_1$user_screen_name
+users_1$user_screen_name %>% head
 users_1$user_screen_name %>% class
 ```
 
@@ -238,6 +240,8 @@ users_1 %>%
 - `mutate()`: 在該dataframe中，從其他變項產生新的變項（例如相加）
 
 ```{r}
+tweets_1 <- read_csv("data/china_082019_1_tweets_csv_hashed.csv")
+
 users_1 %>% 
     mutate(ff_perc = follower_count / following_count) %>% 
     select(ff_perc, follower_count, following_count, user_screen_name) %>%
@@ -298,4 +302,3 @@ users_1 %>%
     count(account_language, sort = T)
 ```
 
-## 5.2 (Advaneced) group_by() and summarize()

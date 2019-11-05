@@ -38,9 +38,10 @@ editor_options:
 ## 0.3 Loading packages
 
 ```{r}
-library(tidyverse)
-library(lubridate)
-library(igraph)
+library(tidyverse) # coding with tidy style 
+library(lubridate) # processing time
+library(igraph) # plotting network
+options(stringsAsFactors = F) # avoid converting character to factor silently
 ```
 
 
@@ -48,10 +49,11 @@ library(igraph)
 ## 0.2 Loading data
 
 ```{r}
-tweets_1 <- read_csv("data/china_082019_1_tweets_csv_hashed.csv")
-tweets_2 <- read_csv("data/china_082019_2_tweets_csv_hashed.csv")
 users_1 <- read_csv("data/china_082019_1_users_csv_hashed.csv")
-users_2 <- read_csv("data/china_082019_2_users_csv_hashed.csv")
+tweets_1 <- read_csv("data/china_082019_1_tweets_csv_hashed.csv")
+
+# users_2 <- read_csv("data/china_082019_2_users_csv_hashed.csv")
+# tweets_2 <- read_csv("data/china_082019_2_tweets_csv_hashed.csv")
 ```
 
 ## 0.3 Previewing data
@@ -60,9 +62,13 @@ tweets_1 %>% glimpse()
 ```
 
 
-# 01 Building network data
+# 01 Preparing network data
 
-## 1.1 Extracting RT relations
+## 1.1 Extracting RT(Retweet) relations
+- RT relationship：user_screen_name -> RT @someone said something
+- 意即「誰（user_screen_name, 在此為被刪除的帳號們）」RT了@someone（某人，不見得只有被刪除的帳號）
+- 在網絡分析上，通常以from-to來表達一個有向關係（A RT B為有向關係）
+- 將推文時間當作第三個變項`tweet_time`
 
 ```{r}
 
@@ -71,17 +77,18 @@ rt_1 <- tweets_1 %>%
     select(user_screen_name, tweet_text, tweet_time) %>%
     filter(str_detect(tweet_text, "RT @"))
 
-# Detecting retweet targets
+# In each tweet, detecting retweet targets when number-of-RT  ==  1.
 rt_edge_1 <- rt_1 %>%
-    mutate(rt_time = str_count(tweet_text, "RT @\\w+")) %>%
-    filter(rt_time == 1) %>%
+    mutate(rt_count = str_count(tweet_text, "RT @\\w+")) %>%
+    filter(rt_count == 1) %>%
     mutate(to = str_extract(tweet_text, "RT @\\w+")) %>%
     mutate(to = str_sub(to, 5, nchar(to))) %>%
     select(from = user_screen_name, to, tweet_time)
 
+# In each tweet, detecting retweet targets when number-of-RT  >  1.
 rt_edge <- rt_1 %>%
-    mutate(rt_time = str_count(tweet_text, "RT @\\w+")) %>%
-    filter(rt_time > 1) %>%
+    mutate(rt_count = str_count(tweet_text, "RT @\\w+")) %>%
+    filter(rt_count > 1) %>%
     mutate(to = str_extract_all(tweet_text, "RT @\\w+")) %>%
     unnest(to) %>%
     mutate(to = str_sub(to, 5, nchar(to))) %>%
@@ -93,7 +100,7 @@ rt_edge <- rt_1 %>%
 
 ```{r}
 rt_edge_inner <- rt_edge %>%
-    filter(to %in% c(users_1$user_screen_name, users_2$user_screen_name))
+    filter(to %in% users_1$user_screen_name)
 ```
 
 
@@ -107,36 +114,38 @@ library(igraph)
 
 g <- rt_edge_inner %>% 
     mutate(year = year(tweet_time)) %>%
+    # filter(year >= 2019) %>%
     count(from, to, year) %>%
-    # filter(n > 15) %>%
     select(from, to, year, weight = n) %>%
     graph.data.frame(directed = T)
 ```
-
 
 
 ## 2.2 Inspecting vertices(V) and edges(E)
 
 ```{r}
 E(g)$weight
-E(g)$year
+E(g)$year %>% head
 
 # V(g)
 # V(g)$name
 ```
 
-## 2.3 Detecting communities
+
+## 2.3 Detecting communitie
+
 ```{r}
 
 # Detecting community by information flow
 V(g)$comm <- membership(infomap.community(g))
+
 # V(g)$comm
 table(V(g)$comm)
 ```
 
 
-
 ## 2.4 Computing vertices properties
+- for detecting prominent actors, users, or nodes in a graph
 
 ```{r}
 
@@ -157,7 +166,9 @@ V(g)$betweenness <- centralization.betweenness(g)$res
 
 ```
 
+
 ## 2.5 Tabulating node properties
+
 ```{r}
 nodes_all <- data.frame(name = V(g)$name,
                         degree = V(g)$degree,
@@ -166,6 +177,8 @@ nodes_all <- data.frame(name = V(g)$name,
                         closeness = V(g)$closeness,
                         community = V(g)$comm,
                         betweeness =V(g)$betweenness)
+
+# nodes_all %>% View
 ```
 
 
@@ -195,22 +208,30 @@ l <- layout.fruchterman.reingold(g)
 
 plot(g, 
      layout = l,
-     vertex.color = rgb(1, 1, 0, 0.2),
+     # vertex.color = rgb(1, 1, 0, 0.2),
+     vertex.color = factor(V(g)$comm),
      vertex.size  = sqrt(V(g)$degree)*3,
      vertex.frame.color= rgb(0, 0, 0, 0.5),
      vertex.label = str_sub(V(g)$name, 1, 10),
      vertex.label.cex = 0.6,
      vertex.label.color = rgb(0, 0, 0, 0.5),
      edge.curved = 0.1,
-     edge.arrow.size = 0, 
+     edge.arrow.size = 0.1, 
      edge.width = sqrt(E(g)$weight+1),
-     edge.color = E(g)$year
+     edge.color = E(g)$year,
+     edge.label = E(g)$year,
+     edge.label.cex = 0.4,
+     edge.label.color = E(g)$year
      )
 ```
 
+## 3.4 Practice
+```{r}
+
+```
 
 
-# 04 Interaction analysis
+# 04 Practice: Plotting network only for hk-anti-extraction
 
 ## 4.1 Extracting accounts and tweets related to hk anti-extract
 - After 2019-01-01
@@ -223,15 +244,6 @@ hk_tweets <- tweets_1 %>%
     filter(tweet_time > as.Date("2019-01-01")) %>%
     mutate(hits = str_extract_all(tweet_text, detects)) %>%
     drop_na(hits)
-
-# hk_users <- hk_tweets %>% 
-#     count(user_screen_name, sort = T)
-# 
-# hk_rt <- hk_tweets %>% 
-#     filter(str_detect(tweet_text, "RT @"))
-# 
-# hk_rt_user <- hk_rt %>%
-#     count(user_screen_name, sort = T)
 ```
 
 
@@ -241,13 +253,13 @@ hk_tweets <- tweets_1 %>%
 
 ```{r}
 hk_rt_compare <- hk_tweets %>%
-    mutate(anti_extract = if_else(tweet_time > as.Date("2019-06-05"), 
+    mutate(date0605 = if_else(tweet_time > as.Date("2019-06-05"), 
                                   "after", "before")) %>%
     filter(str_detect(tweet_text,"RT @")) %>%
     mutate(date = date(tweet_time)) %>%
-    select(user_screen_name, tweet_text, date, anti_extract)
+    select(user_screen_name, tweet_text, date, date0605)
     
-hk_rt_compare  %>% count(anti_extract)
+hk_rt_compare  %>% count(date0605)
 ```
 
 ## 4.3 Plotting before and after
@@ -255,60 +267,66 @@ hk_rt_compare  %>% count(anti_extract)
 
 # Building rt edgelist of hk related tweets
 hk_rt_edgelist <- hk_rt_compare %>%
-    mutate(rt = str_extract_all(tweet_text, "RT @\\w+"))%>%
+    mutate(rt = str_extract_all(tweet_text, "RT @\\w+")) %>%
     unnest(rt) %>%
-    mutate(to = substr(rt,5,nchar(rt))) %>%
-    select(from = user_screen_name, to, anti_extract)
+    mutate(to = substr(rt, 5, nchar(rt))) %>%
+    # filter(to %in% users_1$user_screen_name) %>%
+    select(from = user_screen_name, to, date0605)
+    
+    
     
 
 # Building graph: converting from edgelist
-g_rt <- hk_rt_edgelist %>% 
-    count(from, to, anti_extract) %>%
-    select(from, to, anti_extract, weight = n) %>%
+g_hk <- hk_rt_edgelist %>% 
+    count(from, to, date0605) %>%
+    select(from, to, date0605, weight = n) %>%
     graph.data.frame(directed = T)
 
 # Examing network properties: communities
-V(g_rt)$comm <- membership(infomap.community(g_rt))
-table(V(g_rt)$comm)
+V(g_hk)$comm <- membership(infomap.community(g_hk))
+table(V(g_hk)$comm)
 
 # Examing ego-network properties
-V(g_rt)$degree <- degree(g_rt, mode="all")
-V(g_rt)$indegree <- degree(g_rt, mode="in")
-V(g_rt)$outdegree <- degree(g_rt, mode="out")
-V(g_rt)$closeness <- centralization.closeness(g_rt)$res
-V(g_rt)$betweenness <- centralization.betweenness(g_rt)$res
+V(g_hk)$degree <- degree(g_hk, mode="all")
+V(g_hk)$indegree <- degree(g_hk, mode="in")
+V(g_hk)$outdegree <- degree(g_hk, mode="out")
+V(g_hk)$closeness <- centralization.closeness(g_hk)$res
+V(g_hk)$betweenness <- centralization.betweenness(g_hk)$res
+V(g_hk)$deleted <- if_else(V(g_hk)$name %in% users_1$user_screen_name, 
+                           rgb(1, 0.25, 0, 0.3), rgb(0, 0, 0, 0.1))
 
 # Saving network properties into a table
-nodes_hk_rt <- data_frame(name = V(g_rt)$name,
-                        degree = V(g_rt)$degree,
-                        indegree = V(g_rt)$indegree,
-                        outdegree = V(g_rt)$outdegree,
-                        closeness = V(g_rt)$closeness,
-                        community = V(g_rt)$comm,
-                        betweeness =V(g_rt)$betweenness)
+nodes_hk_rt <- data_frame(name = V(g_hk)$name,
+                        degree = V(g_hk)$degree,
+                        indegree = V(g_hk)$indegree,
+                        outdegree = V(g_hk)$outdegree,
+                        closeness = V(g_hk)$closeness,
+                        community = V(g_hk)$comm,
+                        betweeness =V(g_hk)$betweenness,
+                        deleted = V(g_hk)$deleted)
 
 
 # Plotting network
-plot(g_rt)
-plot(g_rt, edge.arrow.size=.4,vertex.label=NA)
-plot(degree.distribution(g_rt, cumulative=T), pch=20,xlab="degree", ylab="cumulative frequency")
+plot(g_hk)
+plot(g_hk, edge.arrow.size=.4,vertex.label=NA)
+plot(degree.distribution(g_hk, cumulative=T), pch=20,xlab="degree", ylab="cumulative frequency")
 
 
 # Better network plotting
-l <- layout.fruchterman.reingold(g_rt)
+l <- layout.fruchterman.reingold.grid(g_hk)
 
-plot(g_rt, 
+plot(g_hk, 
      layout = l,
-     vertex.color = rgb(1, 1, 0, 0.2),
-     vertex.size  = sqrt(V(g_rt)$degree)*3,
+     vertex.color = V(g_hk)$deleted,
+     vertex.size  = sqrt(V(g_hk)$degree)*2,
      vertex.frame.color= rgb(0, 0, 0, 0.5),
-     vertex.label = str_sub(V(g_rt)$name, 1, 10),
+     vertex.label = str_sub(V(g_hk)$name, 1, 10),
      vertex.label.cex = 0.6,
      vertex.label.color = rgb(0, 0, 0, 0.5),
      edge.curved = .1,
      edge.arrow.size = .1, 
-     edge.width = sqrt(E(g_rt)$weight+1),
-     edge.color = factor(E(g_rt)$anti_extract)
+     edge.width = E(g_hk)$weight/2,
+     edge.color = factor(E(g_hk)$date0605)
      )
 ```
 
