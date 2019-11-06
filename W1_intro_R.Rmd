@@ -118,15 +118,14 @@ users_1 <- read_csv("data/china_082019_1_users_csv_hashed.csv")
 ## 2.1p (Practice) 讀取資料
 - 用快速鍵**Mac: shift+cmd+c or Win: shift+ctrl+c**將前三行註解取消
 - 同上，用`read_csv()`讀取set1的tweets資料並assign給新變數`tweets_1`。
-- 同上，用`read_csv()`讀取set2的users資料並assign給新變數`users_1`。
+- 同上，用`read_csv()`讀取set2的users資料並assign給新變數`users_2`。
 - 同上，用`read_csv()`讀取set2的tweets資料並assign給新變數`tweets_2`。
 
 ```{r}
 # tweets_1 <- 
-# users_1 <- 
+# users_2 <- 
 # tweets_2 <- 
 
-# source("sol/2_1p_sol.R")
 ```
 
 
@@ -289,6 +288,7 @@ test_1 <- users_1 %>%
 
 ## 4.5 (Advanced) 用if_else()產生判斷的結果並放至新變數
 
+
 # 05 觀察資料分布
 
 ## 5.1 count() 計算出現次數
@@ -313,6 +313,7 @@ tweets_1 %>%
 
 
 # 06 用ggplot2視覺化
+- bbplot為bbc所推薦的R視覺化Sytle。可能會因為一開始安裝失敗而無法使用，此時就只需要把`bb_style()`拿掉，並把程式碼最末的`+`號一併拿除。
 
 ## 6.1 barchart
 

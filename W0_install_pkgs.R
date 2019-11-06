@@ -13,10 +13,10 @@
 # bbplot, built by bbc team, defines publising format of R, 
 # bbplot, see https://bbc.github.io/rcookbook/
 
-pkgs <- c("tidyverse", "jiebaR", "rtweet", "tidytext", "widyr", "igraph", "bbplot")
+pkgs <- c("tidyverse", "jiebaR", "rtweet", "tidytext", "widyr", "igraph", "devtools")
 
 # installing packages not in the computer
 pkgs <- pkgs[!(pkgs %in% installed.packages()[,"Package"])] 
 if(length(pkgs)) install.packages(pkgs)
 
-
+devtools::install_github('bbc/bbplot')
