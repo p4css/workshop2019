@@ -92,6 +92,13 @@ users_1 %>%
 ```
 
 
+## 2.3 (Practice) Display the top 10 users who have the most number of tweets.
+
+```{r}
+# YOUR CODE HERE
+```
+
+
 
 # 03 Visual exploration
 ## 3.1 plotting users_1 account creating date
@@ -135,6 +142,15 @@ users_2 %>%
     theme(plot.title = element_text(family="Heiti TC Light"))
 ```
 
+## 3.4 (Practice) Comparing users_1 and users_2 sets account creation date 
+1. Mutating a common variable `set` for users_1 and users_2, to indicate their set
+2. Binding two users dataframe
+3. Plotting and using `set` as grouping variable
+4. What kind of plotting methods should you use?
+
+```{r}
+# YOUR CODE HERE
+```
 
 
 
@@ -161,6 +177,10 @@ users_1 %>%
 
 ```
 
+## 4.1 (Practice) Question: does the account_language correlate with year?
+```{r}
+# YOUR CODE HERE
+```
 
 
 # 05 Studying follower vs following
@@ -292,7 +312,7 @@ hk_tweets %>%
 
 
 
-## (Practice) Filtering relevant tweets
+## 6.4 (Practice) Filtering relevant tweets
 - Filtering tweets relevant to anti-extradition
 
 ```{r}
