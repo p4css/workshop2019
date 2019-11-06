@@ -313,6 +313,9 @@ tweets_1 %>%
 
 
 # 06 用ggplot2視覺化
+
+## 6.1 barchart
+
 ```{r}
 library(bbplot)
 
@@ -323,6 +326,9 @@ tweets_1 %>%
     geom_col(fill = "royalblue") +
     bbc_style()
 ```
+
+
+## 6.2 Line chart
 
 ```{r}
 tweets_1 %>%
@@ -336,6 +342,8 @@ tweets_1 %>%
     geom_vline(xintercept = as.Date(c("2019-01-01", "2018-01-01", "2017-01-01", "2019-06-05")), color="red", alpha=0.5)
 ```
 
+
+## 6.3 Options 
 
 ```{r}
 tweets_1 %>%
