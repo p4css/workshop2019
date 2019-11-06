@@ -5,11 +5,11 @@
 - [Join the facebook group: remixed.tw](https://www.facebook.com/groups/remixed.tw)
 - [行前通知](https://docs.google.com/document/d/1Ap4mfp8stCQNOGRMqArdk_x0j2sGeDP0pyXP78phP0Q/edit?usp=sharing)
 - 主辦單位：
- - 台大新聞研究所
- - 教育部UFO人文社會與科技前瞻人才培育計畫
+  - 台大新聞研究所
+  - 教育部UFO人文社會與科技前瞻人才培育計畫
 - 協辦單位：
- - 台大社科院行為與資料科學研究中心
- - 台大人口與性別研究中心
+  - 台大社科院行為與資料科學研究中心
+  - 台大人口與性別研究中心
 
 # 工作坊議程
 - 09:30~10:20 謝吉隆 開場、工作坊說明、R語言速遊
