@@ -15,10 +15,10 @@
 # 工作坊議程
 - 09:30~10:20 謝吉隆 開場、工作坊說明、R語言速遊
 - 10:40~11:30 許家瑜 探索性分析：使用dplyr套件
-- 11:40~12:30 許家瑜 萃取並分析香港反佔中事件相關tweets
+- 11:40~12:30 許家瑜 萃取並分析香港反送中事件相關tweets
 - Lunch break
 - 13:30~14:20 謝吉隆 社會網絡分析方法簡介
-- 14:30~15:20 吳冠賢 網絡分析與視覺化
+- 14:30~15:20 吳冠賢 Retweet網絡分析與視覺化
 - 15:30~16:20 謝吉隆 網絡分析結果的詮釋與結語
 
 # 分析案例
@@ -27,7 +27,7 @@
 - [READr（2019-08-22）。Twitter 大戰中國網軍！？解密被刪帳號資料集](https://www.readr.tw/post/2013)
 
 # Workshop slides
-
+- [Slide](https://docs.google.com/presentation/d/14J5l4LU-_mpCYV_uc_pj7FZDRG8iTfMChD-dEzdcs7U/edit?usp=sharing)
 
 # 相關程式碼
 ```
