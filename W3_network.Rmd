@@ -132,7 +132,7 @@ E(g)$year %>% head
 ```
 
 
-## 2.3 Detecting communitie
+## 2.3 Detecting communities
 
 ```{r}
 
