@@ -13,13 +13,13 @@
   - 台大多媒體製作中心
 
 # 工作坊議程
-- 09:30~10:20 謝吉隆 開場、工作坊說明、R語言速遊
+- 09:30~10:20 謝吉隆 [開場、工作坊說明、R語言速遊]
 - 10:40~11:30 許家瑜 探索性分析：使用dplyr套件
-- 11:40~12:30 許家瑜 萃取並分析香港反送中事件相關tweets
+- 11:40~12:30 許家瑜 萃取並分析香港反送中事件相關tweets([Ending](https://docs.google.com/presentation/d/e/2PACX-1vQ5wq9MTIPQzdfVR0AQpK_wSsF6HE9Koz98siSQPt3jblUS3l1Atuo9-mjRzzcLwht8PTqlG1qnhox9/pub?start=false&loop=false&delayms=3000&slide=id.g73d7842b9e_1_119))
 - Lunch break
-- 13:30~14:20 謝吉隆 社會網絡分析方法簡介
-- 14:30~15:20 吳冠賢 Retweet網絡分析與視覺化
-- 15:30~16:20 謝吉隆 網絡分析結果的詮釋與結語
+- 13:30~14:20 謝吉隆 [社會網絡分析方法簡介](https://docs.google.com/presentation/d/e/2PACX-1vRDFSmS6O-bH5Mizy1Aw0PS0ZEiC8P9hsbGi-l_ozh0YC4OSGFSA1fBd2CteS_iB5iokkwhxLVOoCGd/pub?start=false&loop=false&delayms=3000&slide=id.g73d7842b9e_1_9)
+- 14:30~15:20 吳冠賢 [Retweet網絡分析與視覺化](https://docs.google.com/presentation/d/e/2PACX-1vRDFSmS6O-bH5Mizy1Aw0PS0ZEiC8P9hsbGi-l_ozh0YC4OSGFSA1fBd2CteS_iB5iokkwhxLVOoCGd/pub?start=false&loop=false&delayms=3000&slide=id.g73d7842b9e_1_119)
+- 15:30~16:20 謝吉隆 [網絡分析結果的詮釋與結語](https://docs.google.com/presentation/d/e/2PACX-1vQ5wq9MTIPQzdfVR0AQpK_wSsF6HE9Koz98siSQPt3jblUS3l1Atuo9-mjRzzcLwht8PTqlG1qnhox9/pub?start=false&loop=false&delayms=3000&slide=id.g73d7842b9e_1_119)
 
 # 分析案例
 - [Twitter Safety(2019-08-19). Information operations directed at Hong Kong](https://blog.twitter.com/en_us/topics/company/2019/information_operations_directed_at_Hong_Kong.html)
