@@ -54,7 +54,7 @@ tweets_2 <- read_csv("data/china_082019_2_tweets_csv_hashed.csv")
 ```
 
 
-# 02 Exploatory Data Analysis
+# 02 Exploratory Data Analysis
 
 ## 2.1 Inspecting data structure
 
